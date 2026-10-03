@@ -1,6 +1,6 @@
 # PRD: FlowSync MVP
 
-Documento de producto. Parte de `docs/prd/alcance-mvp.md`, que fija el alcance inicial. No contiene diseño técnico: ni modelo de datos, ni endpoints, ni arquitectura.
+Documento de producto. Parte de `docs/prd/alcance-mvp.md`, que fija el alcance inicial. Describe qué necesita la persona usuaria, no cómo se implementa.
 
 **Precedencia:** donde este PRD amplía o concreta `alcance-mvp.md`, manda este PRD. Las ampliaciones están listadas y aprobadas en la sección 4.
 
@@ -59,13 +59,13 @@ Una sola vertical fina, usable de punta a punta:
 5. Filtro de la lista por estado.
 6. Cambios de otras personas visibles sin recargar a mano, en el plazo de RNF-1.
 7. Ver qué se ha movido desde la última visita.
-8. Pruebas automatizadas incluidas en el trabajo.
+8. Cada requisito se entrega verificado contra su criterio de aceptación.
 
 ### Ampliaciones aprobadas sobre `alcance-mvp.md`
 
 Este PRD incorpora, con aprobación, cuatro puntos que el alcance inicial no listaba. Se asumen dentro del MVP:
 
-- **A1. «Ver qué se ha movido desde la última visita»** (punto 7 y épica E3). Es la forma concreta de cumplir «llego por la mañana y veo qué se ha movido». Requiere recordar, por persona, cuándo fue su última visita; ese dato es privado (RF-19).
+- **A1. «Ver qué se ha movido desde la última visita»** (punto 7 y épica E3). Es la forma concreta de cumplir «llego por la mañana y veo qué se ha movido». Lo que cada persona ve como «nuevo» depende de cuándo miró por última vez, y eso es privado (RF-19).
 - **A2. La frescura cubre también altas de tareas y cambios de responsable**, no solo cambios de estado (RF-16).
 - **A3. Editar tareas:** título, fecha de vencimiento y responsable de una tarea ya creada (RF-8 y RF-11).
 - **A4. El responsable se elige entre las personas con cuenta del espacio** (RF-7).
@@ -92,7 +92,7 @@ Este PRD incorpora, con aprobación, cuatro puntos que el alcance inicial no lis
 Tratado como fuera de alcance del MVP **[SUPUESTO]**; a decidir antes de construir:
 
 - Eliminar o archivar tareas (hoy una tarea creada por error solo puede editarse).
-- Historial completo de cambios (el MVP solo guarda el último cambio de cada tarea, ver RF-18).
+- Historial completo de cambios (el MVP solo muestra el último cambio de cada tarea, ver RF-18).
 - Varios responsables por tarea.
 - Migrar tareas desde el gestor actual.
 
@@ -120,7 +120,7 @@ Tratado como fuera de alcance del MVP **[SUPUESTO]**; a decidir antes de constru
 - **RF-9.** Una tarea tiene exactamente uno de tres estados: pendiente, en curso o hecho. Toda tarea nueva empieza en pendiente.
 - **RF-10.** Una persona puede cambiar el estado de una tarea desde la lista, en dos clics como máximo y sin salir de la lista. *Aceptación:* partiendo de la lista abierta, el cambio de estado se completa con dos clics o menos.
 - **RF-11.** Cualquier persona del espacio puede cambiar el estado, el título, la fecha y el responsable de cualquier tarea. El sistema no lo impide; la convención es que lo hace quien trabaja la tarea. **[SUPUESTO]**
-- **RF-12.** La lista muestra todas las tareas del espacio, sin paginar, con su título, responsable, estado y fecha de vencimiento. **[SUPUESTO]** Se ordena con las tareas cambiadas más recientemente primero.
+- **RF-12.** La lista muestra todas las tareas del espacio, sin ocultar ninguna, con su título, responsable, estado y fecha de vencimiento. **[SUPUESTO]** Se ordena con las tareas cambiadas más recientemente primero.
 - **RF-13.** Una persona puede filtrar la lista por estado. Sin filtro, ve todas las tareas. *Aceptación:* con el filtro «en curso», solo se ven tareas en curso.
 - **RF-14.** Una tarea con fecha de vencimiento pasada y estado distinto de «hecho» se muestra como vencida, con una marca visible en la lista. Una tarea sin fecha nunca se muestra como vencida, y una tarea «hecha» deja de contar como vencida. **[SUPUESTO]** Las dos reglas, «hecha deja de ser vencida» y la marca visible en lugar de un filtro propio, se asumen sin validar.
 - **RF-15.** El día de vencimiento se interpreta en la zona horaria de la persona que mira la lista, no en la de quien creó la tarea. **[SUPUESTO]**
@@ -129,7 +129,7 @@ Tratado como fuera de alcance del MVP **[SUPUESTO]**; a decidir antes de constru
 
 - **RF-16.** Cuando otra persona crea una tarea, cambia su estado o cambia su responsable, quien tiene la lista abierta ve el cambio sin recargar la página a mano, dentro del plazo de RNF-1.
 - **RF-17.** Al abrir la lista, las tareas con algún cambio posterior a la última vez que esa persona la abrió quedan marcadas como cambiadas. *Aceptación:* si otra persona cambia una tarea y yo abro la lista, la veo marcada; si la abro de nuevo sin más cambios, ya no está marcada. **[SUPUESTO]** «Última visita» significa la última vez que la persona abrió la lista.
-- **RF-18.** Para cada tarea cambiada, la persona puede ver quién hizo el último cambio y cuándo. El MVP solo conserva el último cambio de cada tarea.
+- **RF-18.** Para cada tarea cambiada, la persona puede ver quién hizo el último cambio y cuándo. El MVP solo muestra el último cambio de cada tarea.
 - **RF-19.** La marca de «cambiado desde mi última visita» es privada: ninguna otra persona la ve.
 - **RF-20.** FlowSync no envía notificaciones push, correos ni mensajes a otras herramientas.
 - **RF-21.** FlowSync no muestra quién está conectado ni indicadores de actividad de las personas. Solo muestra el estado de las tareas.
@@ -143,9 +143,9 @@ Tratado como fuera de alcance del MVP **[SUPUESTO]**; a decidir antes de constru
 - **RNF-5. Uso en varios husos horarios.** La fecha de vencimiento se muestra como el mismo día para todas las personas, sea cual sea su huso. Solo el cálculo de «vencida» depende de la zona horaria de quien mira (RF-15). **[SUPUESTO]**
 - **RNF-6. Escala.** Funciona con equipos de 3 a 10 personas. **[SUPUESTO]** Se mantiene usable con unas 200 tareas en el espacio.
 - **RNF-7. Plataforma.** Se usa desde un navegador de escritorio actual. **[SUPUESTO]** El uso en móvil no se prueba en el MVP.
-- **RNF-8. Privacidad.** No se recoge ni se muestra ningún dato sobre la actividad o conexión de las personas, más allá del estado de las tareas y de la última visita privada de RF-17.
+- **RNF-8. Privacidad.** FlowSync no sabe ni muestra si una persona está conectada o activa. Solo muestra el estado de las tareas; lo único que se guarda de cada persona es cuándo miró por última vez (RF-17), y solo ella lo ve.
 - **RNF-9. Seguridad básica.** El acceso a las tareas exige sesión iniciada, y la contraseña de una persona no es visible para nadie, ni siquiera para ella.
-- **RNF-10. Calidad.** Cada requisito funcional llega con al menos una prueba automatizada que verifica su criterio de aceptación.
+- **RNF-10. Calidad.** Cada requisito funcional se entrega verificado contra su criterio de aceptación.
 
 ## 8. Restricciones
 
