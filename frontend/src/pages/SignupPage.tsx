@@ -25,11 +25,12 @@ export function SignupPage() {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
     const password = String(form.get('password'))
+    const passwordConfirmation = String(form.get('passwordConfirmation'))
     const fullName = String(form.get('fullName')).trim()
     setError(null)
     setFieldErrors({})
 
-    if (password !== form.get('passwordConfirmation')) {
+    if (password !== passwordConfirmation) {
       setFieldErrors({ passwordConfirmation: 'Las contraseñas no coinciden.' })
       return
     }
@@ -40,7 +41,7 @@ export function SignupPage() {
         fullName: fullName || null,
         email: String(form.get('email')),
         password,
-        passwordConfirmation: password,
+        passwordConfirmation,
       })
       navigate('/', { replace: true })
     } catch (err) {
@@ -86,7 +87,6 @@ export function SignupPage() {
             type="password"
             required
             minLength={8}
-            maxLength={32}
             autoComplete="new-password"
           />
           <FieldError message={fieldErrors.password} />

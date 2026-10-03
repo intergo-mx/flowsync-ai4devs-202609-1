@@ -21,11 +21,15 @@ export class ApiError extends Error {
 }
 
 type ErrorBody = {
-  errors?: { message: string; field?: string }[]
+  errors?: { message: string; field?: string; rule?: string }[]
   message?: string
 }
 
-function toApiError(status: number, body: ErrorBody | null): ApiError {
+function toApiError(
+  status: number,
+  body: ErrorBody | null,
+  isAuthAttempt: boolean,
+): ApiError {
   const fieldErrors: FieldErrors = {}
   for (const error of body?.errors ?? []) {
     if (error.field && !fieldErrors[error.field]) {
@@ -33,13 +37,19 @@ function toApiError(status: number, body: ErrorBody | null): ApiError {
     }
   }
 
-  if (status === 422 && fieldErrors.email?.includes('already been taken')) {
+  const emailTaken = body?.errors?.some(
+    (error) => error.field === 'email' && error.rule === 'database.unique',
+  )
+  if (status === 422 && emailTaken) {
     return new ApiError('Este correo ya está registrado.', status, {
       email: 'Este correo ya está registrado.',
     })
   }
-  if (status === 400 || status === 401) {
+  if (isAuthAttempt && (status === 400 || status === 401)) {
     return new ApiError('Correo o contraseña incorrectos.', status)
+  }
+  if (status === 401) {
+    return new ApiError('Tu sesión expiró. Inicia sesión de nuevo.', status)
   }
   if (status === 422) {
     return new ApiError(
@@ -56,7 +66,12 @@ function toApiError(status: number, body: ErrorBody | null): ApiError {
 
 export async function request<T>(
   path: string,
-  options: { method?: string; body?: unknown; token?: string | null } = {},
+  options: {
+    method?: string
+    body?: unknown
+    token?: string | null
+    isAuthAttempt?: boolean
+  } = {},
 ): Promise<T> {
   let response: Response
   try {
@@ -64,10 +79,13 @@ export async function request<T>(
       method: options.method ?? 'GET',
       headers: {
         Accept: 'application/json',
-        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(options.body !== undefined
+          ? { 'Content-Type': 'application/json' }
+          : {}),
         ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
       },
-      body: options.body ? JSON.stringify(options.body) : undefined,
+      body:
+        options.body !== undefined ? JSON.stringify(options.body) : undefined,
     })
   } catch {
     throw new ApiError('No se pudo conectar con el servidor.', 0)
@@ -75,7 +93,7 @@ export async function request<T>(
 
   const body = await response.json().catch(() => null)
   if (!response.ok) {
-    throw toApiError(response.status, body)
+    throw toApiError(response.status, body, options.isAuthAttempt ?? false)
   }
   return body as T
 }
@@ -87,13 +105,19 @@ export const authApi = {
     request<AuthResponse>('/auth/login', {
       method: 'POST',
       body: { email, password },
+      isAuthAttempt: true,
     }),
   signup: (input: {
     fullName: string | null
     email: string
     password: string
     passwordConfirmation: string
-  }) => request<AuthResponse>('/auth/signup', { method: 'POST', body: input }),
+  }) =>
+    request<AuthResponse>('/auth/signup', {
+      method: 'POST',
+      body: input,
+      isAuthAttempt: true,
+    }),
   profile: (token: string) =>
     request<{ data: User }>('/account/profile', { token }),
   logout: (token: string) =>
