@@ -1,38 +1,66 @@
 import Task from '#models/task'
+import { DateTime } from 'luxon'
 import type { HttpContext } from '@adonisjs/core/http'
 import TaskTransformer from '#transformers/task_transformer'
-import { createTaskValidator, updateTaskValidator } from '#validators/task'
+import { createTaskValidator, referenceDayValidator, updateTaskValidator } from '#validators/task'
+
+/**
+ * Día de referencia de la lectura: el `today` de la consulta (el día local de
+ * quien mira) o, si falta, el día actual en UTC.
+ */
+async function referenceDay({ request }: HttpContext): Promise<string> {
+  const { today } = await request.validateUsing(referenceDayValidator, { data: request.qs() })
+
+  return (today ?? DateTime.utc()).toISODate()!
+}
 
 export default class TasksController {
   /**
    * Sin `orderBy` a propósito: el orden de la lista es un punto abierto.
    */
-  async index({ serialize }: HttpContext) {
+  async index(ctx: HttpContext) {
+    const today = await referenceDay(ctx)
     const tasks = await Task.query().preload('assignee')
 
-    return serialize(TaskTransformer.transform(tasks))
+    return ctx.serialize(TaskTransformer.transform(tasks, today))
   }
 
-  async store({ auth, request, serialize }: HttpContext) {
-    const { title } = await request.validateUsing(createTaskValidator)
-    const user = auth.getUserOrFail()
+  async show(ctx: HttpContext) {
+    const today = await referenceDay(ctx)
+    const task = await Task.query().where('id', ctx.params.id).preload('assignee').firstOrFail()
 
-    const task = await Task.create({ title, status: 'pending', assigneeId: user.id })
+    return ctx.serialize(TaskTransformer.transform(task, today))
+  }
+
+  async store(ctx: HttpContext) {
+    const today = await referenceDay(ctx)
+    const { title, dueDate } = await ctx.request.validateUsing(createTaskValidator)
+    const user = ctx.auth.getUserOrFail()
+
+    const task = await Task.create({
+      title,
+      status: 'pending',
+      assigneeId: user.id,
+      dueDate: dueDate ?? null,
+    })
     await task.load('assignee')
 
-    return serialize(TaskTransformer.transform(task))
+    return ctx.serialize(TaskTransformer.transform(task, today))
   }
 
-  async update({ params, request, serialize }: HttpContext) {
-    const task = await Task.findOrFail(params.id)
-    const { status, assigneeId } = await request.validateUsing(updateTaskValidator)
+  async update(ctx: HttpContext) {
+    const today = await referenceDay(ctx)
+    const task = await Task.findOrFail(ctx.params.id)
+    const { status, assigneeId, dueDate } = await ctx.request.validateUsing(updateTaskValidator)
 
     // Solo cambian los campos enviados: `merge` pisaría con `undefined` el resto.
+    // `dueDate: null` quita la fecha; ausente la deja como estaba.
     if (status !== undefined) task.status = status
     if (assigneeId !== undefined) task.assigneeId = assigneeId
+    if (dueDate !== undefined) task.dueDate = dueDate
     await task.save()
     await task.load('assignee')
 
-    return serialize(TaskTransformer.transform(task))
+    return ctx.serialize(TaskTransformer.transform(task, today))
   }
 }

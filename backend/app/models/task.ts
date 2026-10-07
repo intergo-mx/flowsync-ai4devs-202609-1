@@ -13,4 +13,15 @@ export type TaskStatus = (typeof TASK_STATUSES)[number]
 export default class Task extends TaskSchema {
   @belongsTo(() => User, { foreignKey: 'assigneeId' })
   declare assignee: BelongsTo<typeof User>
+
+  /**
+   * Única implementación de la regla de vencimiento. `today` es un día de
+   * calendario `YYYY-MM-DD`: se comparan cadenas ISO, nunca instantes, así que
+   * vencer hoy no es estar vencida y no hay conversión de huso.
+   */
+  isOverdueOn(today: string): boolean {
+    if (!this.dueDate || this.status === 'done') return false
+    const due = this.dueDate.toISODate()
+    return due !== null && due < today
+  }
 }
