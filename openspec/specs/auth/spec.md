@@ -142,22 +142,27 @@ El sistema SHALL responder siempre en JSON en las rutas de cuentas y acceso, env
 
 ### Requirement: Protección de pantallas según la sesión
 
-La aplicación SHALL mostrar el perfil solo a quien tenga una sesión válida y SHALL mostrar las pantallas de registro e inicio de sesión solo a quien no la tenga.
+La aplicación SHALL mostrar el perfil y la lista de tareas solo a quien tenga una sesión válida y SHALL mostrar las pantallas de registro e inicio de sesión solo a quien no la tenga.
 
 #### Scenario: Visitante sin sesión pide el perfil
 
 - **WHEN** una persona sin sesión abre la dirección del perfil
 - **THEN** ve la pantalla de inicio de sesión
 
+#### Scenario: Visitante sin sesión pide la lista de tareas
+
+- **WHEN** una persona sin sesión abre la dirección de la lista de tareas
+- **THEN** ve la pantalla de inicio de sesión
+
 #### Scenario: Persona con sesión pide acceso o registro
 
 - **WHEN** una persona con sesión abre la pantalla de inicio de sesión o la de registro
-- **THEN** ve su perfil
+- **THEN** ve la lista de tareas
 
 #### Scenario: Dirección desconocida
 
 - **WHEN** una persona abre una dirección que la aplicación no tiene
-- **THEN** ve su perfil si tiene sesión, o la pantalla de inicio de sesión si no la tiene
+- **THEN** ve la lista de tareas si tiene sesión, o la pantalla de inicio de sesión si no la tiene
 
 #### Scenario: Comprobación de la sesión guardada
 
@@ -171,7 +176,7 @@ La aplicación SHALL ofrecer una pantalla "Crea tu cuenta" con los campos "Nombr
 #### Scenario: Registro correcto
 
 - **WHEN** la persona rellena email, contraseña y confirmación válidos y pulsa "Crear cuenta"
-- **THEN** el botón muestra "Creando cuenta…" y queda deshabilitado mientras se envía, y al terminar entra con sesión iniciada y ve su perfil
+- **THEN** el botón muestra "Creando cuenta…" y queda deshabilitado mientras se envía, y al terminar entra con sesión iniciada y ve la lista de tareas
 
 #### Scenario: Nombre en blanco
 
@@ -205,7 +210,7 @@ La aplicación SHALL ofrecer una pantalla "Inicia sesión" con los campos "Email
 #### Scenario: Acceso correcto
 
 - **WHEN** la persona introduce credenciales correctas y pulsa "Entrar"
-- **THEN** el botón muestra "Entrando…" y queda deshabilitado mientras se envía, y al terminar ve su perfil
+- **THEN** el botón muestra "Entrando…" y queda deshabilitado mientras se envía, y al terminar ve la lista de tareas
 
 #### Scenario: Credenciales incorrectas
 
