@@ -175,7 +175,12 @@ export function TasksPage() {
                     className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
                   >
                     <div className="min-w-0">
-                      <p className="truncate font-medium">{task.title}</p>
+                      <Link
+                        to={`/tasks/${task.id}`}
+                        className="block truncate font-medium underline-offset-4 hover:underline"
+                      >
+                        {task.title}
+                      </Link>
                       <p className="text-muted-foreground text-sm">
                         {task.assignee.fullName ?? 'Sin nombre'}
                       </p>

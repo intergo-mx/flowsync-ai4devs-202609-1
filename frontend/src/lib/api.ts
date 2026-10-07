@@ -43,6 +43,7 @@ const FIELD_LABELS: Record<string, string> = {
   password: 'la contraseña',
   passwordConfirmation: 'la confirmación de la contraseña',
   title: 'el título',
+  dueDate: 'la fecha de vencimiento',
 }
 
 const label = (field?: string) => FIELD_LABELS[field ?? ''] ?? 'el campo'
@@ -69,6 +70,8 @@ function translate(error: BackendError): string {
       return `${label(field)} debe tener al menos ${meta?.min} caracteres.`
     case 'maxLength':
       return `${label(field)} no puede superar los ${meta?.max} caracteres.`
+    case 'date':
+      return 'Esa fecha no existe o está incompleta.'
     case 'enum':
       return 'Ese estado no es válido.'
     default:
@@ -175,6 +178,18 @@ export function logout(token: string): Promise<void> {
   )
 }
 
+/**
+ * Día de calendario del dispositivo (`YYYY-MM-DD`). Se arma con los componentes
+ * locales: `toISOString()` daría el día UTC y movería el veredicto de vencida.
+ */
+function localToday(): string {
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+
+  return `${now.getFullYear()}-${month}-${day}`
+}
+
 export function getTasks(token: string): Promise<Task[]> {
   return request<{ data: Task[] }>('/api/v1/tasks', { token }).then(
     (response) => response.data,
@@ -189,12 +204,19 @@ export function createTask(token: string, title: string): Promise<Task> {
   }).then((response) => response.data)
 }
 
+export function getTask(token: string, id: number | string): Promise<Task> {
+  return request<{ data: Task }>(`/api/v1/tasks/${id}?today=${localToday()}`, {
+    token,
+  }).then((response) => response.data)
+}
+
+/** `dueDate: null` quita la fecha; si no se envía, la fecha no se toca. */
 export function updateTask(
   token: string,
   id: number,
-  patch: { status: TaskStatus },
+  patch: { status?: TaskStatus; dueDate?: string | null },
 ): Promise<Task> {
-  return request<{ data: Task }>(`/api/v1/tasks/${id}`, {
+  return request<{ data: Task }>(`/api/v1/tasks/${id}?today=${localToday()}`, {
     method: 'PATCH',
     body: patch,
     token,

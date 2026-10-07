@@ -47,11 +47,14 @@ export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
 
 /**
  * Espejo de `TaskTransformer` del backend. Del responsable solo llega el
- * nombre; la tarea no expone fechas.
+ * nombre. `dueDate` es un día de calendario `YYYY-MM-DD` y `isOverdue` lo
+ * decide el servidor: el cliente nunca lo calcula.
  */
 export type Task = {
   id: number
   title: string
   status: TaskStatus
   assignee: { fullName: string | null }
+  dueDate: string | null
+  isOverdue: boolean
 }
